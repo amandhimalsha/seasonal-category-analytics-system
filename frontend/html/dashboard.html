@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard | Modeling Academy</title>
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Chart & Excel Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">
+    <img src="/image/logo1.png" alt="Modeling Academy Logo">
+  </div>
+
+  <input type="file" id="excelFile" accept=".xlsx, .xls">
+  <button onclick="analyze()">Analyze</button>
+  <button onclick="clearDashboard()" class="clear-btn">Clear</button>
+
+  <h2 style="text-align:center; margin:20px; color:#FFD700;">
+    Student Seasonal & Demographic Analytics
+  </h2>
+
+  <!-- Admin Info + Logout -->
+  <div class="admin-info">
+    <span id="adminName">Admin Name</span>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+  </div>
+</div>
+
+
+
+  </div>
+
+<!-- Charts -->
+<div class="charts">
+  <div class="chart-container">
+    <canvas id="ageChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="genderChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="locationChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="seasonChart"></canvas>
+  </div>
+</div>
+
+
+  <script src="/js/script.js"></script>
+</body>
+</html>

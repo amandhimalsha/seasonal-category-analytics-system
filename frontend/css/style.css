@@ -1,0 +1,196 @@
+* {
+  box-sizing: border-box;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(120deg, #eef2f3, #d9e4f5);
+  min-height: 100vh;
+}
+
+/* =====================
+   AUTH PAGES
+===================== */
+.auth-box {
+  width: 350px;
+  margin: 100px auto;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  animation: fadeIn 0.8s ease;
+  text-align: center;
+}
+
+.auth-box h2 {
+  margin-bottom: 20px;
+  color: #2b6cb0;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 12px 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.3s;
+}
+
+.auth-box input:focus {
+  border-color: #2b6cb0;
+  box-shadow: 0 0 5px rgba(43,108,176,0.5);
+}
+
+.auth-box button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2b6cb0, #4fd1c5);
+  color: white;
+  font-size: 16px;
+  transition: 0.4s;
+}
+
+.auth-box button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.auth-box a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* =====================
+   NAVBAR
+===================== */
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 25px;
+  background: linear-gradient(135deg, #2b6cb0, #4fd1c5);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.logo img {
+  height: 45px;
+}
+
+/* File Upload */
+.navbar input[type="file"] {
+  background: white;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* Buttons */
+.navbar button {
+  padding: 10px 18px;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+/* Analyze Button */
+.navbar button:first-of-type {
+  background: #ffffff;
+  color: #2b6cb0;
+}
+
+.navbar button:first-of-type:hover {
+  background: #edf2f7;
+  transform: scale(1.05);
+}
+
+/* Clear Button */
+.clear-btn {
+  background: #e53e3e;
+  color: white;
+}
+
+.clear-btn:hover {
+  background: #c53030;
+  transform: scale(1.05);
+}
+
+/* Admin info on top-right */
+.admin-info {
+  margin-left: auto; /* pushes it to the right */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-info span {
+  color: #FFD700;  /* gold text */
+  font-weight: 600;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  background: #e53e3e; /* red */
+  color: white;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #c53030;
+  transform: scale(1.05);
+}
+
+
+/* =====================
+   DASHBOARD
+===================== */
+.charts {
+  padding: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+canvas {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  animation: fadeUp 0.8s ease;
+}
+
+.chart-container {
+  width: 100%;
+  max-width: 500px;   /* max width for charts */
+  height: 350px;      /* fixed height for proper display */
+  margin: 0 auto;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+/* =====================
+   ANIMATIONS
+===================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
