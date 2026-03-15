@@ -2,20 +2,54 @@
 <html>
 <head>
   <title>Login | Modeling Academy</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-  <div class="auth-box">
-    <h2>Login</h2>
+<body class="auth-page">
+  <div class="auth-split">
+    <div class="auth-brand">
+      <div>
+        <div class="auth-brand-top">
+          <div class="auth-logo">
+            <img src="../image/logo1.png" alt="Modeling Academy Logo">
+          </div>
+          <div class="auth-brand-title">Modeling Academy</div>
+        </div>
+        <div class="auth-tagline">
+          <h1>Seasonal &amp; Category Analytics</h1>
+          <p>Securely access your analytics dashboard to explore seasonal, category, and demographic insights in real time.</p>
+        </div>
+      </div>
+      <div class="auth-brand-accent">
+        Trusted analytics for modern learning teams
+      </div>
+    </div>
 
-    <input type="email" id="loginEmail" placeholder="Email" required>
-    <input type="password" id="loginPassword" placeholder="Password" required>
+    <div class="auth-form-col">
+      <div class="auth-box">
+        <h2>Welcome back</h2>
+        <p class="auth-subtitle">Sign in to continue to your analytics dashboard.</p>
 
-    <button onclick="login()">Login</button>
+        <div class="auth-field">
+          <label for="loginEmail" class="auth-label">Email</label>
+          <input type="email" id="loginEmail" class="auth-input" placeholder="you@example.com" required>
+          <div class="auth-error" id="loginEmailError">Please enter a valid email address.</div>
+        </div>
 
-    <p>Don't have an account? <a href="/html/signup.html">Sign up</a></p>
+        <div class="auth-field">
+          <label for="loginPassword" class="auth-label">Password</label>
+          <input type="password" id="loginPassword" class="auth-input" placeholder="Enter your password" required>
+          <div class="auth-error" id="loginPasswordError">Password is required.</div>
+        </div>
+
+        <button onclick="login()">Login</button>
+
+        <div class="auth-switch">
+          Don't have an account? <a href="/html/signup.html">Sign up</a>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script src="/js/script.js"></script>
+  <script src="../js/script.js"></script>
 </body>
 </html>

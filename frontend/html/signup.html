@@ -2,23 +2,66 @@
 <html>
 <head>
   <title>Signup | Modeling Academy</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
- <div class="auth-box">
-  <h2>Sign Up</h2>
-  <input type="text" id="signupName" placeholder="Name">
-  <input type="email" id="signupEmail" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <input type="password" id="confirmPassword" placeholder="Confirm Password">
-  <button onclick="signup()">Sign Up</button>
+  <link rel="stylesheet" href="../css/style.css">
+></head>
+<body class="auth-page">
+  <div class="auth-split">
+    <div class="auth-brand">
+      <div>
+        <div class="auth-brand-top">
+          <div class="auth-logo">
+            <img src="../image/logo1.png" alt="Modeling Academy Logo">
+          </div>
+          <div class="auth-brand-title">Modeling Academy</div>
+        </div>
+        <div class="auth-tagline">
+          <h1>Create your analytics account</h1>
+          <p>Sign up to unlock seasonal, category, and demographic analytics tailored for your academy.</p>
+        </div>
+      </div>
+      <div class="auth-brand-accent">
+        Designed for insightful decision-making
+      </div>
+    </div>
 
-  <p style="margin-top:15px; font-size:14px;">
-    Already have an account? 
-    <a href="index.html" style="color:#2b6cb0; text-decoration:none;">Login here</a>
-  </p>
-</div>
+    <div class="auth-form-col">
+      <div class="auth-box">
+        <h2>Create account</h2>
+        <p class="auth-subtitle">Join Modeling Academy to start exploring your data.</p>
 
-  <script src="/js/script.js"></script>
+        <div class="auth-field">
+          <label for="signupName" class="auth-label">Full name</label>
+          <input type="text" id="signupName" class="auth-input" placeholder="Jane Doe">
+          <div class="auth-error" id="signupNameError">Name is required.</div>
+        </div>
+
+        <div class="auth-field">
+          <label for="signupEmail" class="auth-label">Email</label>
+          <input type="email" id="signupEmail" class="auth-input" placeholder="you@example.com">
+          <div class="auth-error" id="signupEmailError">Please enter a valid email address.</div>
+        </div>
+
+        <div class="auth-field">
+          <label for="password" class="auth-label">Password</label>
+          <input type="password" id="password" class="auth-input" placeholder="Create a strong password">
+          <div class="auth-error" id="signupPasswordError">Password must meet the minimum requirements.</div>
+        </div>
+
+        <div class="auth-field">
+          <label for="confirmPassword" class="auth-label">Confirm password</label>
+          <input type="password" id="confirmPassword" class="auth-input" placeholder="Re-enter your password">
+          <div class="auth-error" id="signupConfirmError">Passwords must match.</div>
+        </div>
+
+        <button onclick="signup()">Sign Up</button>
+
+        <div class="auth-switch">
+          Already have an account? <a href="index.html">Login here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/script.js"></script>
 </body>
 </html>

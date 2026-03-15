@@ -2,54 +2,240 @@
 <html>
 <head>
   <title>Dashboard | Modeling Academy</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="../css/style.css">
 
   <!-- Chart & Excel Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Optional PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-<div class="navbar">
-  <div class="logo">
-    <img src="/image/logo1.png" alt="Modeling Academy Logo">
+  <div class="dashboard-wrapper">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <div class="logo">
+          <img src="../image/logo1.png" alt="Modeling Academy Logo">
+        </div>
+        <div class="header-titles">
+          <span class="app-subtitle">Modeling Academy</span>
+          <h1 class="app-title">Seasonal &amp; Category Analytics Dashboard</h1>
+        </div>
+      </div>
+
+      <!-- Admin Info + Logout -->
+      <div class="header-right">
+        <div class="admin-info">
+          <span id="adminName">Admin Name</span>
+          <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-content">
+      <!-- Control Panel -->
+      <section class="control-panel">
+        <div class="control-panel-header">
+          <h2>Control Panel</h2>
+          <p class="control-description">
+            Upload an Excel file to analyze student seasonal and demographic trends.
+          </p>
+        </div>
+        <div class="control-panel-body">
+          <div class="file-input-group">
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="excelFile" accept=".xlsx, .xls" class="upload-input">
+              <div class="upload-content">
+                <div class="upload-icon">⬆</div>
+                <div class="upload-texts">
+                  <span class="upload-title">Drop your Excel file here</span>
+                  <span class="upload-subtitle">or click to browse (.xlsx, .xls)</span>
+                </div>
+              </div>
+              <div class="upload-meta">
+                <span id="fileName" class="file-name">No file selected</span>
+                <span id="fileStatus" class="file-status"></span>
+              </div>
+            </div>
+          </div>
+          <div class="control-actions">
+            <button onclick="analyze()" class="primary-btn">Analyze</button>
+            <button onclick="clearDashboard()" class="clear-btn">Clear</button>
+            <button onclick="downloadReport()" class="primary-btn export-btn">Download Report</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary Statistics -->
+      <section class="summary-section">
+        <h3 class="dashboard-section-title">Overview</h3>
+        <p class="dashboard-section-subtitle">High-level metrics calculated from the current dataset.</p>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <p class="summary-label">Total Students</p>
+            <div class="summary-value" id="summaryTotalStudents">-</div>
+            <p class="summary-subtext">Across all records in the uploaded file</p>
+          </div>
+
+          <div class="summary-card">
+            <p class="summary-label">Male / Female</p>
+            <div class="summary-value" id="summaryGenderRatio">-</div>
+            <p class="summary-subtext">Student count by gender</p>
+          </div>
+
+          <div class="summary-card">
+            <p class="summary-label">Unique Locations</p>
+            <div class="summary-value" id="summaryLocations">-</div>
+            <p class="summary-subtext">Distinct student locations</p>
+          </div>
+
+          <div class="summary-card">
+            <p class="summary-label">Most Popular Season</p>
+            <div class="summary-value" id="summarySeason">-</div>
+            <p class="summary-subtext">Season with highest participation</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts -->
+      <section class="charts">
+        <h3 class="dashboard-section-title">Detailed Analytics</h3>
+        <p class="dashboard-section-subtitle">Explore how student demographics and seasonality impact engagement.</p>
+        <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Age Distribution</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="ageChart"></canvas>
+          </div>
+          <p class="chart-description">
+            Visualizes how student enrollment is distributed across different age groups.
+          </p>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Gender Breakdown</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="genderChart"></canvas>
+          </div>
+          <p class="chart-description">
+            Highlights the gender composition of students across the selected data set.
+          </p>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Location Overview</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="locationChart"></canvas>
+          </div>
+          <p class="chart-description">
+            Shows where students are located, helping identify key geographic clusters.
+          </p>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Seasonal Trends</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="seasonChart"></canvas>
+          </div>
+          <p class="chart-description">
+            Tracks seasonal patterns in enrollment or activity across different periods.
+          </p>
+        </div>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <input type="file" id="excelFile" accept=".xlsx, .xls">
-  <button onclick="analyze()">Analyze</button>
-  <button onclick="clearDashboard()" class="clear-btn">Clear</button>
+  <script src="../js/script.js"></script>
+  <script>
+    (function() {
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('excelFile');
+      const fileNameEl = document.getElementById('fileName');
+      const fileStatusEl = document.getElementById('fileStatus');
+      if (!uploadArea || !fileInput) return;
 
-  <h2 style="text-align:center; margin:20px; color:#FFD700;">
-    Student Seasonal & Demographic Analytics
-  </h2>
+      const allowedExtensions = ['.xlsx', '.xls'];
 
-  <!-- Admin Info + Logout -->
-  <div class="admin-info">
-    <span id="adminName">Admin Name</span>
-    <button onclick="logout()" class="logout-btn">Logout</button>
-  </div>
-</div>
+      function getExtension(name) {
+        const idx = name.lastIndexOf('.');
+        return idx !== -1 ? name.substring(idx).toLowerCase() : '';
+      }
 
+      function setStatus(message, type) {
+        if (!fileStatusEl) return;
+        fileStatusEl.textContent = message || '';
+        fileStatusEl.classList.remove('success', 'error');
+        if (type) {
+          fileStatusEl.classList.add(type);
+        }
+      }
 
+      function setFileName(name) {
+        if (fileNameEl) {
+          fileNameEl.textContent = name || 'No file selected';
+        }
+      }
 
-  </div>
+      function handleFile(file) {
+        if (!file) return;
+        const ext = getExtension(file.name);
+        if (!allowedExtensions.includes(ext)) {
+          setFileName('No valid file selected');
+          setStatus('Invalid file format. Please upload .xlsx or .xls.', 'error');
+          try { fileInput.value = ''; } catch (e) {}
+          return;
+        }
 
-<!-- Charts -->
-<div class="charts">
-  <div class="chart-container">
-    <canvas id="ageChart"></canvas>
-  </div>
-  <div class="chart-container">
-    <canvas id="genderChart"></canvas>
-  </div>
-  <div class="chart-container">
-    <canvas id="locationChart"></canvas>
-  </div>
-  <div class="chart-container">
-    <canvas id="seasonChart"></canvas>
-  </div>
-</div>
+        // Mirror dropped file into the hidden input so analyze() keeps working
+        try {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          fileInput.files = dt.files;
+        } catch (e) {
+          // Fallback: rely on the input's own change event when using click
+        }
 
+        setFileName(file.name);
+        setStatus('File uploaded successfully.', 'success');
+      }
 
-  <script src="/js/script.js"></script>
+      uploadArea.addEventListener('click', function() {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', function(e) {
+        const file = e.target.files && e.target.files[0];
+        handleFile(file);
+      });
+
+      uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+
+      uploadArea.addEventListener('dragleave', function(e) {
+        if (e.target === uploadArea) {
+          uploadArea.classList.remove('dragover');
+        }
+      });
+
+      uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        handleFile(file);
+      });
+    })();
+  </script>
 </body>
 </html>
