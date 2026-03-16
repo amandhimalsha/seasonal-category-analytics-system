@@ -37,7 +37,8 @@ function login() {
 /* =======================
    ANALYZE EXCEL FILE
 ======================= */
-function analyze() {
+async function analyze() {
+
   const fileInput = document.getElementById("excelFile");
   const file = fileInput.files[0];
 
@@ -46,20 +47,28 @@ function analyze() {
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const data = new Uint8Array(e.target.result);
-    const workbook = XLSX.read(data, { type: "array" });
+  const formData = new FormData();
+  formData.append("file", file);
 
-    const sheetName = workbook.SheetNames[0];
-    const sheetData = XLSX.utils.sheet_to_json(
-      workbook.Sheets[sheetName]
-    );
+  try {
 
-    generateCharts(sheetData);
-  };
+    const response = await fetch("http://127.0.0.1:8000/analyze", {
+      method: "POST",
+      body: formData
+    });
 
-  reader.readAsArrayBuffer(file);
+    const result = await response.json();
+
+    console.log("Backend results:", result);
+
+    generateChartsFromBackend(result);
+
+  } catch (error) {
+
+    console.error("Error connecting to backend:", error);
+    alert("Error analyzing file");
+
+  }
 }
 
 /* =======================
@@ -93,6 +102,32 @@ function generateCharts(data) {
   charts.push(
     createPieChart("seasonChart", count("Season"), "Seasonal Trends")
   );
+}
+
+// new backend chart generation code
+
+function generateChartsFromBackend(data) {
+
+  clearChartsOnly();
+
+  if(data.Gender){
+    charts.push(
+      createBarChart("genderChart", data.Gender, "Gender Distribution")
+    );
+  }
+
+  if(data.Location){
+    charts.push(
+      createBarChart("locationChart", data.Location, "Location Distribution")
+    );
+  }
+
+  if(data.Season){
+    charts.push(
+      createPieChart("seasonChart", data.Season, "Seasonal Trends")
+    );
+  }
+
 }
 
 /* =======================
