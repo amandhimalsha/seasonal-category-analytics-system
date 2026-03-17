@@ -24,5 +24,6 @@ def run_analysis(file_path):
     add_value_counts("Gender", "Gender")
     add_value_counts("Location", "Location")
     add_value_counts("Season", "Season")
+    add_value_counts("Age", "Age")
 
     return results

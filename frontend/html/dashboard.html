@@ -209,7 +209,14 @@
         setStatus('File uploaded successfully.', 'success');
       }
 
-      uploadArea.addEventListener('click', function() {
+      // Prevent double-open: clicking the input itself can bubble to uploadArea
+      fileInput.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+
+      uploadArea.addEventListener('click', function(e) {
+        // Only trigger the picker when clicking the custom area (not the input itself)
+        if (e.target === fileInput) return;
         fileInput.click();
       });
 

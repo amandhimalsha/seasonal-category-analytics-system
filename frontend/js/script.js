@@ -2,6 +2,7 @@
    GLOBAL VARIABLES
 ======================= */
 let charts = [];
+const LAST_ANALYSIS_KEY = "lastAnalysisResult";
 
 /* =======================
    SIGNUP FUNCTION
@@ -57,11 +58,23 @@ async function analyze() {
       body: formData
     });
 
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Backend error ${response.status}: ${text}`);
+    }
+
     const result = await response.json();
 
     console.log("Backend results:", result);
 
+    try {
+      sessionStorage.setItem(LAST_ANALYSIS_KEY, JSON.stringify(result));
+    } catch (_e) {
+      // If storage is unavailable, proceed without persistence
+    }
+
     generateChartsFromBackend(result);
+    updateSummaryFromCharts();
 
   } catch (error) {
 
@@ -125,6 +138,12 @@ function generateChartsFromBackend(data) {
   if(data.Season){
     charts.push(
       createPieChart("seasonChart", data.Season, "Seasonal Trends")
+    );
+  }
+
+  if(data.Age){
+    charts.push(
+      createLineChart("ageChart", data.Age, "Age Distribution")
     );
   }
 
@@ -342,6 +361,12 @@ function createLineChart(id, values, title) {
 function clearDashboard() {
   document.getElementById("excelFile").value = "";
   clearChartsOnly();
+  updateSummaryFromCharts();
+  try {
+    sessionStorage.removeItem(LAST_ANALYSIS_KEY);
+  } catch (_e) {
+    // ignore
+  }
 }
 
 /* =======================
@@ -362,126 +387,121 @@ function logout() {
 
 /* =======================
    SUMMARY STATISTICS (DASHBOARD)
-   - Derived from rendered charts, no changes to analyze()/generateCharts()
+   - Update ONLY after charts are generated (no timers)
 ======================= */
-(function () {
-  // Only run on pages that have the summary section
-  function getEl(id) {
-    return document.getElementById(id);
-  }
+function getEl(id) {
+  return document.getElementById(id);
+}
 
-  function findChartByCanvasId(targetId) {
-    if (!Array.isArray(charts)) return null;
-    return charts.find(function (c) {
+function findChartByCanvasId(targetId) {
+  if (!Array.isArray(charts)) return null;
+  return (
+    charts.find(function (c) {
       return c && c.canvas && c.canvas.id === targetId;
-    }) || null;
+    }) || null
+  );
+}
+
+function updateSummaryFromCharts() {
+  var totalEl = getEl("summaryTotalStudents");
+  var genderEl = getEl("summaryGenderRatio");
+  var locEl = getEl("summaryLocations");
+  var seasonEl = getEl("summarySeason");
+
+  // Not on dashboard page (or DOM not ready yet)
+  if (!totalEl || !genderEl || !locEl || !seasonEl) {
+    return;
   }
 
-  function updateSummaryFromCharts() {
-    var totalEl = getEl("summaryTotalStudents");
-    var genderEl = getEl("summaryGenderRatio");
-    var locEl = getEl("summaryLocations");
-    var seasonEl = getEl("summarySeason");
-
-    if (!totalEl || !genderEl || !locEl || !seasonEl) {
-      return;
-    }
-
-    if (!charts || charts.length === 0) {
-      totalEl.textContent = "-";
-      genderEl.textContent = "-";
-      locEl.textContent = "-";
-      seasonEl.textContent = "-";
-      return;
-    }
-
-    // Gender chart for total + breakdown
-    var genderChart = findChartByCanvasId("genderChart");
-    if (genderChart && genderChart.data && genderChart.data.datasets[0]) {
-      var labels = genderChart.data.labels || [];
-      var values = genderChart.data.datasets[0].data || [];
-      var total = values.reduce(function (sum, v) { return sum + (Number(v) || 0); }, 0);
-
-      var maleCount = 0;
-      var femaleCount = 0;
-
-      labels.forEach(function (label, idx) {
-        var v = Number(values[idx]) || 0;
-        var lower = String(label || "").toLowerCase();
-        if (lower.indexOf("male") !== -1 && lower.indexOf("fe") === -1) {
-          maleCount += v;
-        } else if (lower.indexOf("female") !== -1 || lower === "f") {
-          femaleCount += v;
-        }
-      });
-
-      totalEl.textContent = total > 0 ? total : "-";
-      genderEl.textContent = (maleCount || femaleCount)
-        ? (maleCount + " / " + femaleCount)
-        : "-";
-    } else {
-      totalEl.textContent = "-";
-      genderEl.textContent = "-";
-    }
-
-    // Unique locations
-    var locChart = findChartByCanvasId("locationChart");
-    if (locChart && Array.isArray(locChart.data && locChart.data.labels)) {
-      var uniqueCount = locChart.data.labels.length;
-      locEl.textContent = uniqueCount > 0 ? uniqueCount : "-";
-    } else {
-      locEl.textContent = "-";
-    }
-
-    // Most popular season
-    var seasonChart = findChartByCanvasId("seasonChart");
-    if (seasonChart && seasonChart.data && seasonChart.data.datasets[0]) {
-      var sLabels = seasonChart.data.labels || [];
-      var sValues = seasonChart.data.datasets[0].data || [];
-      var maxVal = -1;
-      var maxLabel = "";
-      sValues.forEach(function (v, idx) {
-        var num = Number(v) || 0;
-        if (num > maxVal) {
-          maxVal = num;
-          maxLabel = sLabels[idx] || "";
-        }
-      });
-      seasonEl.textContent = maxVal > 0 && maxLabel ? maxLabel : "-";
-    } else {
-      seasonEl.textContent = "-";
-    }
+  if (!charts || charts.length === 0) {
+    totalEl.textContent = "-";
+    genderEl.textContent = "-";
+    locEl.textContent = "-";
+    seasonEl.textContent = "-";
+    return;
   }
 
-  // Poll for chart changes after analyze() runs; lightweight and keeps existing logic untouched
-  var summaryIntervalStarted = false;
+  // Total + gender breakdown from gender chart
+  var genderChart = findChartByCanvasId("genderChart");
+  if (genderChart && genderChart.data && genderChart.data.datasets && genderChart.data.datasets[0]) {
+    var labels = genderChart.data.labels || [];
+    var values = genderChart.data.datasets[0].data || [];
+    var total = values.reduce(function (sum, v) {
+      return sum + (Number(v) || 0);
+    }, 0);
 
-  if (typeof document !== "undefined") {
-    document.addEventListener("DOMContentLoaded", function () {
-      if (summaryIntervalStarted) return;
-      summaryIntervalStarted = true;
+    var maleCount = 0;
+    var femaleCount = 0;
 
-      var lastSignature = "";
-      setInterval(function () {
-        // Only run on dashboard (where the summary section exists)
-        if (!getEl("summaryTotalStudents")) {
-          return;
-        }
-
-        var sig = Array.isArray(charts)
-          ? charts.map(function (c) {
-              return c && c.canvas ? c.canvas.id : "";
-            }).join(",")
-          : "";
-
-        if (sig !== lastSignature) {
-          lastSignature = sig;
-          updateSummaryFromCharts();
-        }
-      }, 700);
+    labels.forEach(function (label, idx) {
+      var v = Number(values[idx]) || 0;
+      var lower = String(label || "").toLowerCase();
+      if (lower.indexOf("male") !== -1 && lower.indexOf("fe") === -1) {
+        maleCount += v;
+      } else if (lower.indexOf("female") !== -1 || lower === "f") {
+        femaleCount += v;
+      }
     });
+
+    totalEl.textContent = total > 0 ? total : "-";
+    genderEl.textContent = (maleCount || femaleCount) ? (maleCount + " / " + femaleCount) : "-";
+  } else {
+    totalEl.textContent = "-";
+    genderEl.textContent = "-";
   }
-})();
+
+  // Unique locations
+  var locChart = findChartByCanvasId("locationChart");
+  if (locChart && locChart.data && Array.isArray(locChart.data.labels)) {
+    var uniqueCount = locChart.data.labels.length;
+    locEl.textContent = uniqueCount > 0 ? uniqueCount : "-";
+  } else {
+    locEl.textContent = "-";
+  }
+
+  // Most popular season
+  var seasonChart = findChartByCanvasId("seasonChart");
+  if (seasonChart && seasonChart.data && seasonChart.data.datasets && seasonChart.data.datasets[0]) {
+    var sLabels = seasonChart.data.labels || [];
+    var sValues = seasonChart.data.datasets[0].data || [];
+    var maxVal = -1;
+    var maxLabel = "";
+    sValues.forEach(function (v, idx) {
+      var num = Number(v) || 0;
+      if (num > maxVal) {
+        maxVal = num;
+        maxLabel = sLabels[idx] || "";
+      }
+    });
+    seasonEl.textContent = maxVal > 0 && maxLabel ? maxLabel : "-";
+  } else {
+    seasonEl.textContent = "-";
+  }
+}
+
+// Restore charts after an accidental Live Server reload (e.g., dataset file saved)
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    var raw = null;
+    try {
+      raw = sessionStorage.getItem(LAST_ANALYSIS_KEY);
+    } catch (_e) {
+      raw = null;
+    }
+    if (!raw) return;
+
+    try {
+      var parsed = JSON.parse(raw);
+      generateChartsFromBackend(parsed);
+      updateSummaryFromCharts();
+    } catch (e) {
+      // If corrupted, clear it so it doesn't keep failing
+      try {
+        sessionStorage.removeItem(LAST_ANALYSIS_KEY);
+      } catch (_e2) {}
+    }
+  });
+}
 
 /* =======================
    EXPORT / DOWNLOAD REPORT
@@ -506,60 +526,21 @@ function downloadReport() {
   var now = new Date();
   var stamp = now.toISOString().replace(/[:.]/g, "-");
 
-  // 1) Export each chart as PNG
-  charts.forEach(function (chart, index) {
-    if (!chart || !chart.canvas) return;
-    try {
-      var dataUrl = chart.toBase64Image("image/png", 1);
-      var link = document.createElement("a");
-      var id = chart.canvas.id || ("chart-" + (index + 1));
-      link.href = dataUrl;
-      link.download = id + "-" + stamp + ".png";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (e) {
-      // Ignore download errors; user still gets summary file / PDF
-    }
-  });
-
-  // 2) Export summary statistics as text file
-  var summaryText = [
-    "Analytics Summary Report",
-    "Generated: " + now.toLocaleString(),
-    "",
-    "Total Students: " + total,
-    "Male / Female: " + gender,
-    "Unique Locations: " + locations,
-    "Most Popular Season: " + season
-  ].join("\n");
-
-  try {
-    var blob = new Blob([summaryText], { type: "text/plain;charset=utf-8" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = "analytics-summary-" + stamp + ".txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function () {
-      URL.revokeObjectURL(url);
-    }, 2000);
-  } catch (e) {
-    // If Blob not supported, silently skip text export
-  }
-
-  // 3) Optional: PDF report using jsPDF (if available)
+  // Generate ONLY ONE PDF report (summary + ALL charts)
   try {
     var jsPDFNamespace = window.jspdf || window.jsPDF;
     if (!jsPDFNamespace) {
+      alert("PDF export library not loaded. Please refresh and try again.");
       return;
     }
     var jsPDFCtor = jsPDFNamespace.jsPDF || jsPDFNamespace;
     var doc = new jsPDFCtor("p", "pt", "a4");
 
+    var pageWidth = doc.internal.pageSize.getWidth();
+    var pageHeight = doc.internal.pageSize.getHeight();
+    var marginX = 40;
     var y = 40;
+
     doc.setFontSize(16);
     doc.text("Analytics Summary Report", 40, y);
     y += 24;
@@ -573,13 +554,13 @@ function downloadReport() {
     doc.text("Unique Locations: " + locations, 40, y); y += 16;
     doc.text("Most Popular Season: " + season, 40, y); y += 24;
 
-    // Add up to 2 charts into the PDF for a compact report
-    var maxChartsInPdf = 2;
-    var imageWidth = 220;
-    var imageHeight = 140;
-    var marginX = 40;
+    // Add ALL charts, one per section, with paging as needed
+    var maxImageWidth = pageWidth - marginX * 2;
+    var imageHeight = 260;
 
-    charts.slice(0, maxChartsInPdf).forEach(function (chart, idx) {
+    charts.forEach(function (chart) {
+      if (!chart || !chart.canvas) return;
+
       var imgData;
       try {
         imgData = chart.toBase64Image("image/png", 1);
@@ -588,17 +569,18 @@ function downloadReport() {
       }
       if (!imgData) return;
 
-      if (y + imageHeight + 40 > doc.internal.pageSize.getHeight()) {
+      if (y + imageHeight + 40 > pageHeight) {
         doc.addPage();
         y = 40;
       }
 
-      doc.addImage(imgData, "PNG", marginX, y, imageWidth, imageHeight);
+      doc.addImage(imgData, "PNG", marginX, y, maxImageWidth, imageHeight);
       y += imageHeight + 20;
     });
 
     doc.save("analytics-report-" + stamp + ".pdf");
   } catch (e) {
-    // PDF generation is optional; ignore failures
+    console.error("PDF generation failed:", e);
+    alert("Could not generate PDF report.");
   }
 }
