@@ -4,15 +4,12 @@
   <title>Dashboard | Modeling Academy</title>
   <link rel="stylesheet" href="../css/style.css">
 
-  <!-- Chart & Excel Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- Optional PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head> 
 <body>
   <div class="dashboard-wrapper">
-    <!-- Header -->
     <header class="dashboard-header">
       <div class="header-left">
         <div class="logo">
@@ -24,17 +21,15 @@
         </div>
       </div>
 
-      <!-- Admin Info + Logout -->
       <div class="header-right">
         <div class="admin-info">
-          <span id="adminName">Admin Name</span>
+          <span id="adminName">Loading...</span>
           <button onclick="logout()" class="logout-btn">Logout</button>
         </div>
       </div>
     </header>
 
     <main class="dashboard-content">
-      <!-- Control Panel -->
       <section class="control-panel">
         <div class="control-panel-header">
           <h2>Control Panel</h2>
@@ -60,14 +55,13 @@
             </div>
           </div>
           <div class="control-actions">
-            <button onclick="analyze()" class="primary-btn">Analyze</button>
-            <button onclick="clearDashboard()" class="clear-btn">Clear</button>
-            <button onclick="downloadReport()" class="primary-btn export-btn">Download Report</button>
+            <button onclick="window.analyze()" class="primary-btn">Analyze</button>
+            <button onclick="window.clearDashboard()" class="clear-btn">Clear</button>
+            <button onclick="window.downloadReport()" class="primary-btn export-btn">Download Report</button>
           </div>
         </div>
       </section>
 
-      <!-- Summary Statistics -->
       <section class="summary-section">
         <h3 class="dashboard-section-title">Overview</h3>
         <p class="dashboard-section-subtitle">High-level metrics calculated from the current dataset.</p>
@@ -77,19 +71,16 @@
             <div class="summary-value" id="summaryTotalStudents">-</div>
             <p class="summary-subtext">Across all records in the uploaded file</p>
           </div>
-
           <div class="summary-card">
             <p class="summary-label">Male / Female</p>
             <div class="summary-value" id="summaryGenderRatio">-</div>
             <p class="summary-subtext">Student count by gender</p>
           </div>
-
           <div class="summary-card">
             <p class="summary-label">Unique Locations</p>
             <div class="summary-value" id="summaryLocations">-</div>
             <p class="summary-subtext">Distinct student locations</p>
           </div>
-
           <div class="summary-card">
             <p class="summary-label">Most Popular Season</p>
             <div class="summary-value" id="summarySeason">-</div>
@@ -98,64 +89,52 @@
         </div>
       </section>
 
-      <!-- Charts -->
       <section class="charts">
         <h3 class="dashboard-section-title">Detailed Analytics</h3>
         <p class="dashboard-section-subtitle">Explore how student demographics and seasonality impact engagement.</p>
         <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3>Age Distribution</h3>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>Age Distribution</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="ageChart"></canvas>
+            </div>
+            <p class="chart-description">Visualizes how student enrollment is distributed across different age groups.</p>
           </div>
-          <div class="chart-container">
-            <canvas id="ageChart"></canvas>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>Gender Breakdown</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="genderChart"></canvas>
+            </div>
+            <p class="chart-description">Highlights the gender composition of students across the selected data set.</p>
           </div>
-          <p class="chart-description">
-            Visualizes how student enrollment is distributed across different age groups.
-          </p>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3>Gender Breakdown</h3>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>Location Overview</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="locationChart"></canvas>
+            </div>
+            <p class="chart-description">Shows where students are located, helping identify key geographic clusters.</p>
           </div>
-          <div class="chart-container">
-            <canvas id="genderChart"></canvas>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>Seasonal Trends</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="seasonChart"></canvas>
+            </div>
+            <p class="chart-description">Tracks seasonal patterns in enrollment or activity across different periods.</p>
           </div>
-          <p class="chart-description">
-            Highlights the gender composition of students across the selected data set.
-          </p>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3>Location Overview</h3>
-          </div>
-          <div class="chart-container">
-            <canvas id="locationChart"></canvas>
-          </div>
-          <p class="chart-description">
-            Shows where students are located, helping identify key geographic clusters.
-          </p>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3>Seasonal Trends</h3>
-          </div>
-          <div class="chart-container">
-            <canvas id="seasonChart"></canvas>
-          </div>
-          <p class="chart-description">
-            Tracks seasonal patterns in enrollment or activity across different periods.
-          </p>
-        </div>
         </div>
       </section>
     </main>
   </div>
 
-  <script src="../js/script.js"></script>
+  <script type="module" src="../js/script.js"></script>
   <script>
     (function() {
       const uploadArea = document.getElementById('uploadArea');
@@ -196,26 +175,22 @@
           return;
         }
 
-        // Mirror dropped file into the hidden input so analyze() keeps working
         try {
           const dt = new DataTransfer();
           dt.items.add(file);
           fileInput.files = dt.files;
         } catch (e) {
-          // Fallback: rely on the input's own change event when using click
         }
 
         setFileName(file.name);
         setStatus('File uploaded successfully.', 'success');
       }
 
-      // Prevent double-open: clicking the input itself can bubble to uploadArea
       fileInput.addEventListener('click', function (e) {
         e.stopPropagation();
       });
 
       uploadArea.addEventListener('click', function(e) {
-        // Only trigger the picker when clicking the custom area (not the input itself)
         if (e.target === fileInput) return;
         fileInput.click();
       });
